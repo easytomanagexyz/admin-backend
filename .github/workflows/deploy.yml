@@ -33,9 +33,6 @@ jobs:
               echo "🔽 Cloning repository..."
               git clone https://github.com/easytomanagexyz/admin-backend.git .
             else
-              echo "🔐 Fixing permissions"
-              chown -R ubuntu:ubuntu /home/ubuntu/www/admin              
-              chmod -R u+rwX /home/ubuntu/www/admin
               
               echo "⚠️ Backing up .env if it exists"
               if [ -f .env ]; then
