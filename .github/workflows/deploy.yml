@@ -24,22 +24,34 @@ jobs:
           ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST '
             set -e
             
+            # Navigate to or create directory
+            mkdir -p /home/ubuntu/www/admin
             cd /home/ubuntu/www/admin
             
-            echo "🔐 Fixing permissions"
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/www/admin
-            sudo chmod -R u+rwX /home/ubuntu/www/admin
-            
-            echo "⚠️ Backing up .env"
-            cp -f .env /tmp/admin-env-backup || true
-            
-            echo "🧹 Cleaning repo safely"
-            git fetch --all
-            git reset --hard origin/main
-            git clean -fdx -e .env
-            
-            echo "♻️ Restoring .env"
-            cp -f /tmp/admin-env-backup .env || true
+            # Check if it's a git repository, if not clone it
+            if [ ! -d ".git" ]; then
+              echo "🔽 Cloning repository..."
+              git clone https://github.com/easytomanagexyz/admin-backend.git .
+            else
+              echo "🔐 Fixing permissions"
+              sudo chown -R ubuntu:ubuntu /home/ubuntu/www/admin
+              sudo chmod -R u+rwX /home/ubuntu/www/admin
+              
+              echo "⚠️ Backing up .env if it exists"
+              if [ -f .env ]; then
+                cp -f .env /tmp/admin-env-backup
+              fi
+              
+              echo "🧹 Cleaning repo safely"
+              git fetch --all
+              git reset --hard origin/main
+              git clean -fdx -e .env
+              
+              echo "♻️ Restoring .env if backup exists"
+              if [ -f /tmp/admin-env-backup ]; then
+                cp -f /tmp/admin-env-backup .env
+              fi
+            fi
             
             echo "📦 Cleaning dependencies"
             rm -rf node_modules dist .prisma
