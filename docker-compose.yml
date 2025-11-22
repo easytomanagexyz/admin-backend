@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  admin-backend:
+    build: .
+    container_name: admin-backend
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "4001:4001"
