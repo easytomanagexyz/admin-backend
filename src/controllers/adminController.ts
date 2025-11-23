@@ -161,4 +161,217 @@ export const getAnalytics = async (req: Request, res: Response) => {
       error: error.message
     });
   }
+
+/**
+ * adminLogin → Login for admin users
+ */
+export const adminLogin = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const prisma = getMasterPrisma();
+    
+    // Find admin user
+    const admin = await prisma.adminUser.findUnique({
+      where: { email }
+    });
+    
+    if (!admin || admin.password !== password) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials"
+      });
+    }
+    
+    // Generate JWT token
+    const jwt = require("jsonwebtoken");
+    const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "change-this-secret-in-prod";
+    const token = jwt.sign({ id: admin.id, email: admin.email }, JWT_SECRET, {
+      expiresIn: "7d"
+    });
+    
+    return res.json({
+      success: true,
+      token,
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name
+      }
+    });
+  } catch (error: any) {
+    console.error("❌ Error in adminLogin:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Login failed",
+      error: error.message
+    });
+  }
+};
+
+/**
+ * adminCreateDefaultIfMissing → Bootstrap default plan
+ */
+export const adminCreateDefaultIfMissing = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    
+    // Check if any plan exists
+    const existingPlans = await prisma.plan.count();
+    if (existingPlans > 0) {
+      return res.json({
+        success: true,
+        message: "Plans already exist",
+        count: existingPlans
+      });
+    }
+    
+    // Create default plan
+    const defaultPlan = await prisma.plan.create({
+      data: {
+        name: "Basic",
+        monthlyPrice: 29.99,
+        active: true,
+        features: {
+          create: [
+            { feature: "Up to 100 transactions/month" },
+            { feature: "Basic reporting" },
+            { feature: "Email support" }
+          ]
+        }
+      },
+      include: { features: true }
+    });
+    
+    return res.json({
+      success: true,
+      message: "Default plan created",
+      plan: defaultPlan
+    });
+  } catch (error: any) {
+    console.error("❌ Error in adminCreateDefaultIfMissing:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create default plan",
+      error: error.message
+    });
+  }
+};
+
+/**
+ * getUsers → Get all tenants/users
+ */
+export const getUsers = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    
+    const users = await prisma.tenant.findMany({
+      include: {
+        subscriptions: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+    
+    return res.json({
+      success: true,
+      count: users.length,
+      users
+    });
+  } catch (error: any) {
+    console.error("❌ Error in getUsers:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch users",
+      error: error.message
+    });
+  }
+};
+
+/**
+ * getStats → Get summary statistics
+ */
+export const getStats = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    
+    const totalTenants = await prisma.tenant.count();
+    const activeSubscriptions = await prisma.subscription.count({
+      where: { status: "active" }
+    });
+    
+    const totalRevenueAgg = await prisma.transaction.aggregate({
+      _sum: { amountCents: true }
+    });
+    
+    const monthlyRevenueAgg = await prisma.transaction.aggregate({
+      _sum: { amountCents: true },
+      where: {
+        createdAt: {
+          gte: subMonths(new Date(), 1)
+        }
+      }
+    });
+    
+    return res.json({
+      success: true,
+      stats: {
+        totalUsers: totalTenants,
+        activeUsers: activeSubscriptions,
+        totalRevenue: (totalRevenueAgg._sum.amountCents || 0) / 100,
+        monthlyRevenue: (monthlyRevenueAgg._sum.amountCents || 0) / 100
+      }
+    });
+  } catch (error: any) {
+    console.error("❌ Error in getStats:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch stats",
+      error: error.message
+    });
+  }
+};
+
+/**
+ * getLocations → Get location data
+ */
+export const getLocations = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    
+    const locationsRaw = await prisma.tenant.groupBy({
+      by: ["country"],
+      _count: { id: true }
+    });
+    
+    const locationData = await Promise.all(
+      locationsRaw.map(async (loc: any) => {
+        const countryRevenueAgg = await prisma.transaction.aggregate({
+          _sum: { amountCents: true },
+          where: {
+            tenant: { country: loc.country }
+          }
+        });
+        return {
+          country: loc.country,
+          users: loc._count.id,
+          revenue: (countryRevenueAgg._sum.amountCents || 0) / 100
+        };
+      })
+    );
+    
+    return res.json({
+      success: true,
+      count: locationData.length,
+      locations: locationData
+    });
+  } catch (error: any) {
+    console.error("❌ Error in getLocations:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch locations",
+      error: error.message
+    });
+  }
+};
 };
