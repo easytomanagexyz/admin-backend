@@ -8,16 +8,14 @@ datasource db {
   url      = env("DATABASE_URL_MASTER")
 }
 
-/*
- Master (Admin) DB schema supporting Admin Dashboard features:
- - Tenants (clients using your POS)
- - AdminUser (admin portal users)
- - Plan / PlanFeature (pricing management)
- - Subscription (tenant subscription + plan history)
- - Transaction (for analytics / revenue)
- - Invoice (billing records)
- - Location (optional country-level summary)
-*/
+// Master (Admin) DB schema supporting Admin Dashboard features:
+// - Tenants (clients using your POS)
+// - AdminUser (admin portal users)
+// - Plan / PlanFeature (pricing management)
+// - Subscription (tenant subscription + plan history)
+// - Transaction (for analytics / revenue)
+// - Invoice (billing records)
+// - Location (optional country-level summary)
 
 model Tenant {
   id           String      @id @default(cuid())
