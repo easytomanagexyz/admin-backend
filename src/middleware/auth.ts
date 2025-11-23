@@ -24,3 +24,6 @@ export function authenticateAdmin(req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 }
+
+// Export alias for compatibility with routes
+export const requireAdmin = authenticateAdmin;
