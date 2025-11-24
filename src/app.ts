@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import adminRoutes from "./routes/admin";
+import tenantsRoutes from "./routes/tenants";
 import { getFullDbUrl, getDbParams, buildPostgresUrl } from "./utils/awsSecrets";
 import { PrismaClient } from "@prisma/client";
 import { getMasterPrisma } from "./utils/prismaFactory";
@@ -40,6 +41,7 @@ export async function createApp() {
 
   // Mount admin routes under /api
   app.use("/api", adminRoutes);
+  app.use("/api/tenants", tenantsRoutes);
 
   // Health endpoint
   app.get("/", (req, res) => res.send("Admin API up"));
