@@ -1,5 +1,5 @@
 // scripts/seedMaster.ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/master";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
