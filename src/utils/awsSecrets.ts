@@ -10,7 +10,7 @@ async function getParameterRaw(name: string) {
 }
 
 function stripQuotes(val?: string | null) {
-  if (!val) return val;
+  if (!val) return null;
   // SSM sometimes returns quoted result in CLI; strip surrounding quotes
   return val.replace(/^"(.*)"$/, "$1");
 }
