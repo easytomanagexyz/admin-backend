@@ -161,6 +161,7 @@ export const getAnalytics = async (req: Request, res: Response) => {
       error: error.message
     });
   }
+  };
 
 /**
  * adminLogin → Login for admin users
@@ -373,5 +374,4 @@ export const getLocations = async (req: Request, res: Response) => {
       error: error.message
     });
   }
-};
 };
