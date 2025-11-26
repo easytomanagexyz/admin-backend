@@ -229,8 +229,8 @@ export const adminCreateDefaultIfMissing = async (req: Request, res: Response) =
     // Create default plan
     const defaultPlan = await prisma.plan.create({
       data: {
-        name: "Basic",
-        monthlyPrice: 29.99,
+        name: "Basic",         slug: "basic",
+        monthlyPrice: 2999,
         active: true,
         features: {
           create: [
