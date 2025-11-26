@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getMasterPrisma } from "../utils/prismaMaster";
+import { getMasterPrisma } from "../utils/prismaFactory";
 import { subMonths, format } from "date-fns";
 
 export const getPlans = async (req: Request, res: Response) => {
