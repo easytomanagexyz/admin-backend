@@ -234,9 +234,9 @@ export const adminCreateDefaultIfMissing = async (req: Request, res: Response) =
         active: true,
         features: {
           create: [
-            { feature: "Up to 100 transactions/month" },
-            { feature: "Basic reporting" },
-            { feature: "Email support" }
+            { name: "Up to 100 transactions/month" },
+            { name: "Basic reporting" },
+            { name: "Email support" }
           ]
         }
       },
