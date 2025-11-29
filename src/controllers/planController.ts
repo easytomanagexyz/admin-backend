@@ -3,7 +3,7 @@ import prisma from "../utils/prisma";
 
 export async function listPlans(req: Request, res: Response) {
   try {
-    const plans = await prisma.plan.findMany({ include: { product: true } });
+    const plans = await prisma.plan.findMany();
     return res.json(plans);
   } catch (err) {
     return res.status(500).json({ message: "Server error", error: (err as Error).message });
@@ -21,7 +21,6 @@ export async function createPlan(req: Request, res: Response) {
       const plan = await prisma.plan.create({
         data: {
           name,
-          price: Number(price) || 0,
           currency: currency || "INR"
         }
       });
