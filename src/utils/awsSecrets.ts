@@ -10,7 +10,7 @@ async function getParameterRaw(name: string) {
 }
 
 function stripQuotes(val?: string | null) {
-  if (!val) return val;
+  if (!val) return null;
   // SSM sometimes returns quoted result in CLI; strip surrounding quotes
   return val.replace(/^"(.*)"$/, "$1");
 }
@@ -39,7 +39,7 @@ export async function getDbParams(prefix = "/eatwithme") {
   for (const [k, param] of Object.entries(mapping)) {
     try {
       const v = await getParameterRaw(param);
-      out[k] = v !== undefined ? stripQuotes(v) : null;
+      out[k] = v != null ? stripQuotes(v) : null;
     } catch (e) {
       out[k] = null;
     }

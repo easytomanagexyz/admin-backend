@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getMasterPrisma } from "../utils/prismaMaster";
+import { getMasterPrisma } from "../utils/prismaFactory";
 import { subMonths, format } from "date-fns";
 
 export const getPlans = async (req: Request, res: Response) => {
@@ -161,6 +161,7 @@ export const getAnalytics = async (req: Request, res: Response) => {
       error: error.message
     });
   }
+  };
 
 /**
  * adminLogin → Login for admin users
@@ -228,14 +229,14 @@ export const adminCreateDefaultIfMissing = async (req: Request, res: Response) =
     // Create default plan
     const defaultPlan = await prisma.plan.create({
       data: {
-        name: "Basic",
-        monthlyPrice: 29.99,
+        name: "Basic",         slug: "basic",
+        monthlyPrice: 2999,
         active: true,
         features: {
           create: [
-            { feature: "Up to 100 transactions/month" },
-            { feature: "Basic reporting" },
-            { feature: "Email support" }
+            { name: "Up to 100 transactions/month" },
+            { name: "Basic reporting" },
+            { name: "Email support" }
           ]
         }
       },
@@ -373,5 +374,4 @@ export const getLocations = async (req: Request, res: Response) => {
       error: error.message
     });
   }
-};
 };
