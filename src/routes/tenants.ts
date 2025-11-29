@@ -79,3 +79,4 @@ console.error('[Admin] Find tenant by email failed', err);
 return res.status(500).json({ message: 'Failed to lookup tenant' });
 }
 });
+export default router;
