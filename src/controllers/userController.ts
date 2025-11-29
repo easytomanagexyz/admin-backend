@@ -28,7 +28,7 @@ export async function listTenants(req: Request, res: Response) {
 export async function getTenant(req: Request, res: Response) {
   try {
     const id = req.params.id;
-    const tenant = await prisma.tenant.findUnique({ where: { id }, include: { revenues: true, activities: true } });
+    const tenant = await prisma.tenant.findUnique({ where: { id }, include: { activities: true } });
     if (!tenant) return res.status(404).json({ message: "Not found" });
     return res.json(tenant);
   } catch (err) {

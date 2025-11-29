@@ -7,13 +7,13 @@ const JWT_EXPIRES = "7d";
 
 export async function createAdmin(email: string, password: string, name?: string) {
   const hashed = await bcrypt.hash(password, 10);
-  return prisma.admin.create({
+  return prisma.adminUser.create({
     data: { email, password: hashed, name },
   });
 }
 
 export async function authenticateAdmin(email: string, password: string) {
-  const admin = await prisma.admin.findUnique({ where: { email } });
+  const admin = await prisma.adminUser.findUnique({ where: { email } });
   if (!admin) return null;
   const ok = await bcrypt.compare(password, admin.password);
   if (!ok) return null;

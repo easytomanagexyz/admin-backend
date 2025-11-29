@@ -39,3 +39,6 @@ router.get('/:restaurantId/credentials', async (req: Request, res: Response) => 
 });
 
 export default router;
+/*
+// Temporarily disabled for build
+*/
