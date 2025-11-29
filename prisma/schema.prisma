@@ -1,115 +1,114 @@
 generator client {
-provider = "prisma-client-js"
-binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL_MASTER")
+  url = env("DATABASE_URL_MASTER")
 }
 
-// Master (Admin) DB schema supporting Admin Dashboard features:
-// - Tenants (clients using your POS)
-// - AdminUser (admin portal users)
-// - Plan / PlanFeature (pricing management)
-// - Subscription (tenant subscription + plan history)
-// - Transaction (for analytics / revenue)
-// - Invoice (billing records)
-// - Location (optional country-level summary)
-
 model Tenant {
-  id           String      @id @default(cuid())
-  name         String
-  email        String      @unique
-  restaurantId String      @unique
-  dbName       String      @unique
-  dbUser       String
-  dbPassword   String
-  useRedis     Boolean     @default(false)
-  plan         String?
-  country      String?     // added for location analytics
-  city         String?
-  phone        String?
-  address      String?
-  createdAt    DateTime    @default(now())
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  dbName String @unique
+  dbUser String
+  dbPassword String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  restaurantId String @unique
+  useRedis Boolean @default(false)
+  posType String @default("RESTAURANT")
+  status String @default("TRIAL")
+  country String?
+  city String?
+  timezone String?
+  contactName String?
+  contactPhone String?
+  billingEmail String?
+  onboardingCompleted Boolean @default(false)
+  lastSeenAt DateTime?
+  notes String?
+
   subscriptions Subscription[]
   transactions Transaction[]
-  invoices      Invoice[]
+  invoices Invoice[]
 }
 
 model AdminUser {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  password   String
-  name       String?
-  role       String   @default("superadmin")
-  createdAt  DateTime @default(now())
-  lastLogin  DateTime?
+  id String @id @default(cuid())
+  email String @unique
+  password String
+  name String?
+  role String @default("superadmin")
+  createdAt DateTime @default(now())
+  lastLogin DateTime?
 }
 
 model Plan {
-  id          String       @id @default(cuid())
-  slug        String       @unique
-  name        String
+  id String @id @default(cuid())
+  slug String @unique
+  name String
   description String?
-  currency    String       @default("INR")
+  currency String @default("INR")
   monthlyPrice Int
-  yearlyPrice  Int?
-  active      Boolean      @default(true)
-  createdAt   DateTime     @default(now())
-  features    PlanFeature[]
+  yearlyPrice Int?
+  active Boolean @default(true)
+  createdAt DateTime @default(now())
+  features PlanFeature[]
   subscriptions Subscription[]
 }
 
 model PlanFeature {
-  id        String  @id @default(cuid())
-  plan      Plan    @relation(fields: [planId], references: [id])
-  planId    String
-  name      String
-  value     String? // optional value like "10,000 transactions"
+  id String @id @default(cuid())
+  plan Plan @relation(fields: [planId], references: [id])
+  planId String
+  name String
+  value String?
 }
 
 model Subscription {
-  id            String    @id @default(cuid())
-  tenant        Tenant    @relation(fields: [tenantId], references: [id])
-  tenantId      String
-  plan          Plan      @relation(fields: [planId], references: [id])
-  planId        String
-  startedAt     DateTime  @default(now())
-  expiresAt     DateTime?
-  priceCents    Int
-  currency      String    @default("INR")
-  status        String    @default("active") // active, cancelled, expired
-  createdAt     DateTime  @default(now())
+  id String @id @default(cuid())
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String
+  plan Plan @relation(fields: [planId], references: [id])
+  planId String
+  startedAt DateTime @default(now())
+  expiresAt DateTime?
+  priceCents Int
+  currency String @default("INR")
+  status String @default("active")
+  createdAt DateTime @default(now())
 }
 
 model Transaction {
-  id          String   @id @default(cuid())
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId    String
+  id String @id @default(cuid())
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String
   amountCents Int
-  currency    String   @default("INR")
-  type        String   // e.g., "sale", "refund"
-  metadata    Json?
-  createdAt   DateTime @default(now())
+  currency String @default("INR")
+  type String
+  metadata Json?
+  createdAt DateTime @default(now())
 }
 
 model Invoice {
-  id         String   @id @default(cuid())
-  tenant     Tenant   @relation(fields: [tenantId], references: [id])
-  tenantId   String
+  id String @id @default(cuid())
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  tenantId String
   amountCents Int
-  currency   String   @default("INR")
-  issuedAt   DateTime @default(now())
-  dueAt      DateTime?
-  paid       Boolean  @default(false)
-  metadata   Json?
+  currency String @default("INR")
+  issuedAt DateTime @default(now())
+  dueAt DateTime?
+  paid Boolean @default(false)
+  metadata Json?
 }
 
 model LocationSummary {
-  id        String   @id @default(cuid())
-  country   String   @unique
-  tenants   Int      @default(0)
-  revenueCents Int   @default(0)
+  id String @id @default(cuid())
+  country String @unique
+  tenants Int @default(0)
+  revenueCents Int @default(0)
   updatedAt DateTime @updatedAt
 }
