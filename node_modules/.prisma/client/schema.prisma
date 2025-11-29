@@ -19,7 +19,8 @@ model Tenant {
   updatedAt DateTime @updatedAt
   restaurantId String @unique
   useRedis Boolean @default(false)
-  posType String @default("RESTAURANT")
+  plan          String?  @default("free")   // <-- ADD THIS
+  posType       String   @default("RESTAURANT")   // Already exists
   status String @default("TRIAL")
   country String?
   city String?
