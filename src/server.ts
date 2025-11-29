@@ -3,7 +3,7 @@ dotenv.config();
 
 import { createApp } from "./app";
 
-const PORT = process.env.PORT ?? 4000;
+const PORT = process.env.PORT ?? 4100;
 
 (async function main() {
   try {
