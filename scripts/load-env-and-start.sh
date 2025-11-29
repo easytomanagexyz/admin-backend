@@ -41,8 +41,4 @@ PY
   echo "Built DATABASE_URL_MASTER from individual params."
 fi
 
-echo "Starting backend with PM2 (update-env)..."
-pm2 start dist/server.js --name admin-backend --update-env || pm2 restart admin-backend --update-env
-pm2 save
-
 echo "Done."
