@@ -8,33 +8,27 @@ datasource db {
   url      = env("DATABASE_URL_MASTER")
 }
 
-model Tenant {
-  id                  String    @id @default(cuid())
-  name                String
-  email               String    @unique
-  dbName              String    @unique
-  dbUser              String
-  dbPassword          String
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  restaurantId        String    @unique
-  useRedis            Boolean   @default(false)
-  plan                String?   @default("free") // <-- ADD THIS
-  posType             String    @default("RESTAURANT") // Already exists
-  status              String    @default("TRIAL")
-  country             String?
-  city                String?
-  timezone            String?
-  contactName         String?
-  phone               String?
-  billingEmail        String?
-  onboardingCompleted Boolean   @default(false)
-  lastSeenAt          DateTime?
-  notes               String?
 
-  subscriptions Subscription[]
-  transactions  Transaction[]
-  invoices      Invoice[]
+
+model Tenant {
+id String @id @default(cuid())
+name String
+email String @unique
+dbName String @unique
+dbUser String
+dbPassword String
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+restaurantId String @unique
+useRedis Boolean @default(false)
+plan String?
+country String?
+city String?
+phone String?
+
+subscriptions Subscription[]
+transactions Transaction[]
+invoices Invoice[]
 }
 
 model AdminUser {
