@@ -1,3 +1,5 @@
+# @format
+
 name: Deploy Admin Backend to EC2
 
 on:
@@ -6,16 +8,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Copy SSH key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
           chmod 600 key.pem
-      
+
       - name: Deploy to EC2
         env:
           HOST: ${{ secrets.EC2_HOST }}
@@ -23,48 +24,41 @@ jobs:
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=no $USERNAME@$HOST '
             set -e
-            
-            # Navigate to or create directory
-            mkdir -p /home/ubuntu/www/admin
-            cd /home/ubuntu/www/admin
-            
-            # Check if it's a git repository, if not clone it
-            if [ ! -d ".git" ]; then
-              echo "🔽 Cloning repository..."
-              git clone https://github.com/easytomanagexyz/admin-backend.git .
-            else
-              
-              echo "⚠️ Backing up .env if it exists"
-              if [ -f .env ]; then
-                cp -f .env /tmp/admin-env-backup
-              fi
-              
-              echo "🧹 Cleaning repo safely"
-              git fetch --all
-              git reset --hard origin/main
-              git clean -fdx -e .env
-              
-              echo "♻️ Restoring .env if backup exists"
-              if [ -f /tmp/admin-env-backup ]; then
-                cp -f /tmp/admin-env-backup .env
-              fi
-            fi
-            
+            source ~/.bash_profile
+
+            cd /home/ubuntu/www/admin-backend
+
+            echo "🔐 Fixing permissions"
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/www/admin-backend
+            sudo chmod -R u+rwX /home/ubuntu/www/admin-backend
+
+            echo "⚠️ Backing up .env if it exists"
+            cp -f .env /tmp/admin-env-backup || true
+
+            echo "🧹 Cleaning repo safely"
+            git fetch --all
+            git reset --hard origin/main
+            git clean -fdx -e .env
+
+            echo "♻️ Restoring .env if backup exists"
+            cp -f /tmp/admin-env-backup .env || true
+
             echo "📦 Cleaning dependencies"
             rm -rf node_modules dist .prisma
             npm cache clean --force
-            
+
             echo "📦 Installing dependencies"
             npm install --legacy-peer-deps
-            
+
             echo "🔧 Generating Prisma Client"
-            npx prisma generate
-            
+            npx prisma generate --schema=prisma/schema.prisma
+
             echo "🏭 Building TypeScript"
             npx tsc
-            
-            echo "🚀 Restarting backend service"
-            pm2 restart admin-backend || pm2 start dist/index.js --name admin-backend
-            
-            echo "✅ Admin backend deployment completed!"
+
+            echo "🚀 Starting admin backend"
+            chmod +x scripts/load-env-and-start.sh
+            ./scripts/load-env-and-start.sh
+
+            echo "🎉 Deployment completed!"
           '
