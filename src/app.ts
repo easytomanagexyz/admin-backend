@@ -35,8 +35,40 @@ export async function createApp() {
   // (prismaFactory will create one only when requested)
   getMasterPrisma();
 
+
   const app = express();
-  app.use(cors({ origin: true, credentials: true }));
+
+  // CORS - allow Vercel frontend and others
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        // Allow non-browser / curl / server-to-server
+        if (!origin) return callback(null, true);
+
+        const allowedOrigins = [
+          "http://localhost:3000",
+          "http://localhost:5173",
+          "https://eat-with-me-frontend-is7z81mej-abhimaniyus-projects.vercel.app",
+          "https://eatwithme.easytomanage.xyz",
+          "https://admin.easytomanage.xyz",
+        ];
+
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+
+        console.warn("❌ Admin CORS blocked:", origin);
+        return callback(null, false);
+      },
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+
+  // Explicit preflight handler (optional but safe)
+  app.options("*", cors());
+
   app.use(express.json());
 
   // Mount admin routes under /api
