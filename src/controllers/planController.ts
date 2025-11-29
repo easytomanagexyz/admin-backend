@@ -21,7 +21,10 @@ export async function createPlan(req: Request, res: Response) {
       const plan = await prisma.plan.create({
         data: {
           name,
-          currency: currency || "INR"
+          slug: name.toLowerCase().replace(/\s+/g, "-"),
+          monthlyPrice: Number(price) || 0,
+          currency: currency || "INR",
+          active: true
         }
       });
 
