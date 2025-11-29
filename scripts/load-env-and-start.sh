@@ -3,7 +3,6 @@ set -e
 
 echo "🔹 Loading environment variables from .env..."
 
-Load .env into environment
 if [ -f ".env" ]; then
 export $(grep -v '^#' .env | xargs)
 echo "✔ .env loaded"
