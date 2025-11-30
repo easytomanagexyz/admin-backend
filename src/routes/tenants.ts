@@ -79,4 +79,34 @@ console.error('[Admin] Find tenant by email failed', err);
 return res.status(500).json({ message: 'Failed to lookup tenant' });
 }
 });
-export default router;
+
+		// Get tenant by restaurantId (used by POS backend login)
+router.get('/tenants/:restaurantId', async (req, res) => {
+	  const { restaurantId } = req.params;
+
+	  if (!restaurantId) {
+											    return res.status(400).json({ message: 'restaurantId param required' });
+		    }
+
+	  try {
+		      const tenant = await prisma.tenant.findUnique({
+				        where: { restaurantId },
+				      });
+
+		      if (!tenant) {
+				        return res.status(404).json({ message: 'Tenant not found' });
+				      }
+
+		      return res.json({
+				        id: tenant.id,
+				        restaurantId: tenant.restaurantId,
+				        email: tenant.email,
+				        dbName: tenant.dbName,
+				        useRedis: tenant.useRedis,
+				      });
+		    } catch (err) {
+		      console.error('[Admin] Find tenant by restaurantId failed', err);
+		      return res.status(500).json({ message: 'Failed to lookup tenant' });
+		    }
+	});
+export default router;			
