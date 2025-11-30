@@ -1,0 +1,56 @@
+# Docker Compose for Local Development
+# Usage: docker-compose -f docker-compose.dev.yml up -d
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Admin Backend
+  admin-db:
+    image: postgres:15-alpine
+    container_name: admin-db-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: admin_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - admin_db_data:/var/lib/postgresql/data
+    networks:
+      - local-dev
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Admin Backend Service
+  admin-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: admin-backend-dev
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@admin-db:5432/admin_db
+      PORT: 4000
+      JWT_SECRET: dev-secret-change-in-production
+      LOG_LEVEL: debug
+    ports:
+      - '4000:4000'
+    depends_on:
+      admin-db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - local-dev
+    command: npm run dev
+
+volumes:
+  admin_db_data:
+
+networks:
+  local-dev:
+    driver: bridge
