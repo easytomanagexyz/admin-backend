@@ -6,7 +6,11 @@ const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "change-this-secret-in-prod";
 /**
  * Auth middleware: expects Authorization: Bearer <token>
  */
-export function authenticateAdmin(req: Request, res: Response, next: NextFunction) {
+export function authenticateAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const auth = req.headers["authorization"] || req.headers["Authorization"];
   if (!auth || typeof auth !== "string") {
     return res.status(401).json({ message: "Missing authorization header" });
@@ -25,5 +29,4 @@ export function authenticateAdmin(req: Request, res: Response, next: NextFunctio
   }
 }
 
-// Export alias for compatibility with routes
 export const requireAdmin = authenticateAdmin;

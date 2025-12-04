@@ -15,7 +15,7 @@ const router = Router();
 // Public
 router.post("/admin/login", adminLogin);
 
-// Optional one-time bootstrap (protect or disable in prod)
+// Optional one-time bootstrap (now just returns a message)
 router.post("/admin/bootstrap-create", adminCreateDefaultIfMissing);
 
 // Protected
