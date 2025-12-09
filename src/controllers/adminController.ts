@@ -312,3 +312,245 @@ export const getLocations = async (req: Request, res: Response) => {
 		});
 	}
 };
+
+// PLAN MANAGEMENT FUNCTIONS
+export const createPlan = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    const { slug, name, description, currency, monthlyPrice, yearlyPrice, features, active } = req.body;
+    
+    if (!slug || !name || monthlyPrice === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: slug, name, monthlyPrice',
+      });
+    }
+
+    const plan = await prisma.plan.create({
+      data: {
+        slug,
+        name,
+        description: description || null,
+        currency: currency || 'INR',
+        monthlyPrice,
+        yearlyPrice: yearlyPrice || null,
+        active: active !== undefined ? active : true,
+        features: features ? {
+          create: features.map((f: any) => ({
+            name: f.name,
+            description: f.description,
+          })),
+        } : undefined,
+      },
+      include: { features: true },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Plan created successfully',
+      plan,
+    });
+  } catch (error: any) {
+    console.error('Error in createPlan:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to create plan',
+      error: error.message,
+    });
+  }
+};
+
+export const updatePlan = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    const { id } = req.params;
+    const { name, description, monthlyPrice, yearlyPrice, active } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Plan ID is required',
+      });
+    }
+
+    const plan = await prisma.plan.update({
+      where: { id },
+      data: {
+        ...(name && { name }),
+        ...(description !== undefined && { description }),
+        ...(monthlyPrice !== undefined && { monthlyPrice }),
+        ...(yearlyPrice !== undefined && { yearlyPrice }),
+        ...(active !== undefined && { active }),
+      },
+      include: { features: true },
+    });
+
+    return res.json({
+      success: true,
+      message: 'Plan updated successfully',
+      plan,
+    });
+  } catch (error: any) {
+    console.error('Error in updatePlan:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update plan',
+      error: error.message,
+    });
+  }
+};
+
+export const deletePlanFunc = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Plan ID is required',
+      });
+    }
+
+    await prisma.plan.delete({
+      where: { id },
+    });
+
+    return res.json({
+      success: true,
+      message: 'Plan deleted successfully',
+    });
+  } catch (error: any) {
+    console.error('Error in deletePlan:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete plan',
+      error: error.message,
+    });
+  }
+};
+
+// USER MANAGEMENT FUNCTIONS
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    const { id } = req.params;
+    const { name, email, country, city, state, phone, posType, subscriptionStatus, expiryDate } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
+    const user = await prisma.tenant.update({
+      where: { id },
+      data: {
+        ...(name && { name }),
+        ...(email && { email }),
+        ...(country && { country }),
+        ...(city && { city }),
+        ...(state && { state }),
+        ...(phone && { phone }),
+        ...(posType && { posType }),
+      },
+      include: { subscriptions: true },
+    });
+
+    if (subscriptionStatus && user.subscriptions.length > 0) {
+      await prisma.subscription.update({
+        where: { id: user.subscriptions[0].id },
+        data: {
+          ...(subscriptionStatus && { status: subscriptionStatus }),
+          ...(expiryDate && { expiresAt: new Date(expiryDate) }),
+        },
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'User updated successfully',
+      user,
+    });
+  } catch (error: any) {
+    console.error('Error in updateUser:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update user',
+      error: error.message,
+    });
+  }
+};
+
+export const deleteUserFunc = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
+    await prisma.subscription.deleteMany({
+      where: { tenantId: id },
+    });
+
+    await prisma.tenant.delete({
+      where: { id },
+    });
+
+    return res.json({
+      success: true,
+      message: 'User deleted successfully',
+    });
+  } catch (error: any) {
+    console.error('Error in deleteUser:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete user',
+      error: error.message,
+    });
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const prisma = getMasterPrisma();
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
+    const user = await prisma.tenant.findUnique({
+      where: { id },
+      include: { subscriptions: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    return res.json({
+      success: true,
+      user,
+    });
+  } catch (error: any) {
+    console.error('Error in getUserById:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user',
+      error: error.message,
+    });
+  }
+};
