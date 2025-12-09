@@ -7,6 +7,12 @@ import {
   getPlans,
   getAnalytics,
   getLocations,
+  createPlan,
+  updatePlan,
+  deletePlanFunc,
+  updateUser,
+  deleteUserFunc,
+  getUserById,
 } from "../controllers/adminController";
 import { authenticateAdmin } from "../middleware/auth";
 
@@ -25,4 +31,15 @@ router.get("/admin/plans", authenticateAdmin, getPlans);
 router.get("/admin/analytics", authenticateAdmin, getAnalytics);
 router.get("/admin/locations", authenticateAdmin, getLocations);
 
+// Plan CRUD Routes
+router.post("/admin/plans", authenticateAdmin, createPlan);
+router.put("/admin/plans/:id", authenticateAdmin, updatePlan);
+router.delete("/admin/plans/:id", authenticateAdmin, deletePlanFunc);
+
+// User Management Routes
+router.get("/admin/users/:id", authenticateAdmin, getUserById);
+router.put("/admin/users/:id", authenticateAdmin, updateUser);
+router.delete("/admin/users/:id", authenticateAdmin, deleteUserFunc);
+
+export default router;
 export default router;
