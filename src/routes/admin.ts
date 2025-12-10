@@ -50,4 +50,3 @@ router.put("/admin/users/:id", authenticateAdmin, updateUser);
 router.delete("/admin/users/:id", authenticateAdmin, deleteUserFunc);
 
 export default router;
-export default router;
