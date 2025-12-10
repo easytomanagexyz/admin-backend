@@ -553,4 +553,38 @@ export const getUserById = async (req: Request, res: Response) => {
       error: error.message,
     });
   }
+
+export const getPlanById = async (req: Request, res: Response) => {
+ try {
+ const prisma = getMasterPrisma();
+ const { id } = req.params;
+ if (!id) {
+ return res.status(400).json({
+ success: false,
+ message: 'Plan ID is required',
+ });
+ }
+ const plan = await prisma.plan.findUnique({
+ where: { id },
+ include: { features: true },
+ });
+ if (!plan) {
+ return res.status(404).json({
+ success: false,
+ message: 'Plan not found',
+ });
+ }
+ return res.json({
+ success: true,
+ plan,
+ });
+ } catch (error: any) {
+ console.error('Error in getPlanById:', error);
+ return res.status(500).json({
+ success: false,
+ message: 'Failed to fetch plan',
+ error: error.message,
+ });
+ }
+};
 };
