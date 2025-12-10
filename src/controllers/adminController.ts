@@ -553,6 +553,8 @@ export const getUserById = async (req: Request, res: Response) => {
       error: error.message,
     });
   }
+	};
+
 
 export const getPlanById = async (req: Request, res: Response) => {
  try {
@@ -585,6 +587,5 @@ export const getPlanById = async (req: Request, res: Response) => {
  message: 'Failed to fetch plan',
  error: error.message,
  });
- }
-};
+ };
 };
