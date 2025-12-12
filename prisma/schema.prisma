@@ -42,25 +42,33 @@ model AdminUser {
 }
 
 model Plan {
-  id            String         @id @default(cuid())
-  slug          String         @unique
-  name          String
-  description   String?
-  currency      String         @default("INR")
-  monthlyPrice  Int
-  yearlyPrice   Int?
-  active        Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  features      PlanFeature[]
-  subscriptions Subscription[]
+  id                  String         @id @default(cuid())
+  slug                String         @unique
+  name                String
+  description         String?
+  currency            String         @default("INR")
+  monthlyPrice        Int
+  yearlyPrice         Int?
+  posType             String?        // restaurant, artist, business, salon, bakery, healthcare, education
+  billingCycle        String?        // monthly, quarterly, yearly, lifetime
+  transactionLimit    String?        // e.g., "1000 transactions/month"
+  userLimit           String?        // e.g., "5 users"
+  storageLimit        String?        // e.g., "10GB"
+  supportLevel        String?        // email, priority, 24/7, dedicated
+  active              Boolean        @default(true)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  features            PlanFeature[]
+  subscriptions       Subscription[]
 }
 
 model PlanFeature {
-  id     String  @id @default(cuid())
-  plan   Plan    @relation(fields: [planId], references: [id])
-  planId String
-  name   String
-  value  String?
+  id        String   @id @default(cuid())
+  plan      Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  planId    String
+  name      String
+  value     String?
+  createdAt DateTime @default(now())
 }
 
 model Subscription {
