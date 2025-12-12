@@ -44,4 +44,4 @@ router.delete("/admin/users/:id", authenticateAdmin, deleteUserFunc);
 // ==================== PRICING PLANS MANAGEMENT (Protected) ====================
 // List plans (with optional ?posType=restaurant filter)
 router.get("/admin/plans", authenticateAdmin, listPlans);
-router.get("/admin/pricing-plans", authenticateAdmin
+router.get("/admin/pricing-plans", authenticateAdmin);
