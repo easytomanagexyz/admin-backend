@@ -27,48 +27,21 @@ const router = Router();
 // Public
 router.post("/admin/login", adminLogin);
 
-// Optional one-time bootstrap (now just returns a message)
+// Optional one-time bootstrap
 router.post("/admin/bootstrap-create", adminCreateDefaultIfMissing);
 
-// ==================== PROTECTED ROUTES ====================
-
-// ---- Stats & Analytics ----
+// ==================== STATS & ANALYTICS (Protected) ====================
 router.get("/admin/stats", authenticateAdmin, getStats);
 router.get("/admin/analytics", authenticateAdmin, getAnalytics);
 router.get("/admin/locations", authenticateAdmin, getLocations);
 
-// ---- Users Management ----
+// ==================== USERS MANAGEMENT (Protected) ====================
 router.get("/admin/users", authenticateAdmin, getUsers);
 router.get("/admin/users/:id", authenticateAdmin, getUserById);
 router.put("/admin/users/:id", authenticateAdmin, updateUser);
 router.delete("/admin/users/:id", authenticateAdmin, deleteUserFunc);
 
-// ---- Pricing Plans Management ----
-// List plans (with optional posType filter)
+// ==================== PRICING PLANS MANAGEMENT (Protected) ====================
+// List plans (with optional ?posType=restaurant filter)
 router.get("/admin/plans", authenticateAdmin, listPlans);
-router.get("/admin/pricing-plans", authenticateAdmin, listPlans); // Alias for frontend compatibility
-
-// Get single plan
-router.get("/admin/plans/:id", authenticateAdmin, getPlanById);
-router.get("/admin/pricing-plans/:id", authenticateAdmin, getPlanById); // Alias
-
-// Create plan
-router.post("/admin/plans", authenticateAdmin, createPlan);
-router.post("/admin/pricing-plans", authenticateAdmin, createPlan); // Alias
-
-// Update plan
-router.put("/admin/plans/:id", authenticateAdmin, updatePlan);
-router.put("/admin/pricing-plans/:id", authenticateAdmin, updatePlan); // Alias
-
-// Clone plan to another POS type
-router.post("/admin/plans/:id/clone", authenticateAdmin, clonePlan);
-router.post("/admin/pricing-plans/:id/clone", authenticateAdmin, clonePlan); // Alias
-
-// Delete plan
-router.delete("/admin/plans/:id", authenticateAdmin, deletePlan);
-router.delete("/admin/pricing-plans/:id", authenticateAdmin, deletePlan); // Alias
-
-// Old getPlans endpoint (for backward compatibility)
-router.get("/admin/plans-old", authenticateAdmin, getPlans);
-
-export default router;
+router.get("/admin/pricing-plans", authenticateAdmin

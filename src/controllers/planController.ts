@@ -3,6 +3,7 @@ import { getMasterPrisma } from "../utils/prismaFactory";
 
 /**
  * List all plans, optionally filtered by posType
+ * GET /api/admin/pricing-plans?posType=restaurant
  */
 export async function listPlans(req: Request, res: Response) {
   try {
@@ -34,8 +35,51 @@ export async function listPlans(req: Request, res: Response) {
 }
 
 /**
+ * Get a single plan by ID
+ * GET /api/admin/pricing-plans/:id
+ */
+export async function getPlanById(req: Request, res: Response) {
+  try {
+    const prisma = getMasterPrisma();
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Plan ID is required",
+      });
+    }
+
+    const plan = await prisma.plan.findUnique({
+      where: { id },
+      include: { features: true },
+    });
+
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        message: "Plan not found",
+      });
+    }
+
+    return res.json({
+      success: true,
+      plan,
+    });
+  } catch (err) {
+    console.error("❌ Error in getPlanById:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch plan",
+      error: (err as Error).message,
+    });
+  }
+}
+
+/**
  * Create a plan for a specific POS type
- * Frontend sends: name, posType, price, billingCycle, description, features
+ * POST /api/admin/pricing-plans
+ * Body: { name, posType, price, billingCycle, description, features, transactionLimit?, userLimit?, storageLimit?, supportLevel? }
  */
 export async function createPlan(req: Request, res: Response) {
   try {
@@ -139,6 +183,8 @@ export async function createPlan(req: Request, res: Response) {
 
 /**
  * Update a plan
+ * PUT /api/admin/pricing-plans/:id
+ * Body: { name?, price?, billingCycle?, description?, transactionLimit?, userLimit?, storageLimit?, supportLevel? }
  */
 export async function updatePlan(req: Request, res: Response) {
   try {
@@ -149,7 +195,6 @@ export async function updatePlan(req: Request, res: Response) {
       price,
       billingCycle,
       description,
-      features,
       transactionLimit,
       userLimit,
       storageLimit,
@@ -277,7 +322,9 @@ export async function clonePlan(req: Request, res: Response) {
     }
 
     // Create cloned plan with new posType
-    const newSlug = `${targetPosType}-${originalPlan.name.toLowerCase().replace(/\s+/g, "-")}`;
+    const newSlug = `${targetPosType}-${originalPlan.name
+      .toLowerCase()
+      .replace(/\s+/g, "-")}`;
 
     const clonedPlan = await prisma.plan.create({
       data: {
@@ -323,6 +370,7 @@ export async function clonePlan(req: Request, res: Response) {
 
 /**
  * Delete a plan
+ * DELETE /api/admin/pricing-plans/:id
  */
 export async function deletePlan(req: Request, res: Response) {
   try {
